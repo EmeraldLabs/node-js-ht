@@ -8,6 +8,9 @@ This is a Node.js application that demonstrates a basic sign-in and sign-up func
 - User authentication (sign-in) with password hashing
 - Secure session management using cookies
 - Sequelize ORM for interacting with the PostgreSQL database
+- 2FA authentication API
+- Password Reset API
+- NodeMailer
 
 ## Prerequisites
 
