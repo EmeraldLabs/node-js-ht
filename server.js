@@ -10,13 +10,25 @@ const userRoutes = require("./Routes/userRoutes");
 const PORT = process.env.PORT || 8080;
 
 //assigning the variable app to express
-const app = express();
+const app = express(),
+  bodyParser = require("body-parser"),
+  fs = require("fs"),
+  port = 3000;
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger.json");
+const customCss = fs.readFileSync(process.cwd() + "/swagger.css", "utf8");
 
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(morgan('tiny'));
+app.use(morgan("tiny"));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, { customCss })
+);
+
 
 // synchronizing the database and forcing it to false so we dont lose data
 db.sequelize.sync({ force: true }).then(() => {

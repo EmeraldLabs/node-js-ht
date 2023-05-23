@@ -1,0 +1,257 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a simple app made by a awesome nodejs developer * _ *",
+    "version": "1.0.0",
+    "title": "Tasks API"
+  },
+  "schemes": ["http"],
+  "host": "localhost:3000",
+  "tags": [
+    {
+      "name": "Users"
+    }
+  ],
+  "basePath": "/api",
+  "paths": {
+    "/users/signup": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Sign Up",
+        "description": "Sign Up for the User",
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "task object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User Created Successfully",
+            "schema": {
+              "status": "string"
+            }
+          },
+          "409": {
+            "description": "Error while creating user",
+            "schema": {
+              "status": "string"
+            }
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "summary": "Login",
+        "tags": ["Users"],
+        "description": "Login for the User",
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "task object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "2FA sent to email successfully",
+            "schema": {
+              "status": "string"
+            }
+          },
+          "409": {
+            "description": "Error while creating user",
+            "schema": {
+              "status": "string"
+            }
+          }
+        }
+      }
+    },
+    "/users/verify-2fa": {
+      "post": {
+        "summary": "Verify 2FA",
+        "tags": ["Users"],
+        "description": "Verify 2FA for the Login",
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "task object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "twoFAToken": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "2FA verified successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "userName": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "twoFASecret": {
+                  "type": "string"
+                },
+                "passwordResetToken": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication Failed",
+            "schema": {
+              "status": "string"
+            }
+          }
+        }
+      }
+    },
+    "/users/get-password-reset-link": {
+      "post": {
+        "summary": "Get Reset Password Link",
+        "tags": ["Users"],
+        "description": "get password reset link against email",
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "task object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password reset link sent successfully",
+            "schema": {
+              "status": "string"
+            }
+          },
+          "409": {
+            "description": "Error sending reset password link",
+            "schema": {
+              "status": "string"
+            }
+          }
+        }
+      }
+    },
+    "/users/reset-password": {
+      "post": {
+        "summary": "Reset Password",
+        "tags": ["Users"],
+        "description": "Reset Password",
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "task object",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "passwordResetToken": {
+                  "type": "string"
+                },
+                "newPassword": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password Reset Successfully",
+            "schema": {
+              "status": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "status": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
