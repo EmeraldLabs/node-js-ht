@@ -1,4 +1,3 @@
-//importing modules
 const express = require("express");
 require("dotenv").config();
 const morgan = require("morgan");
