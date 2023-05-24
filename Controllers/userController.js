@@ -2,10 +2,10 @@ const bcrypt = require("bcrypt");
 const db = require("../Models");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
-const { sendMail, MAIL_TEMPLATES } = require('../Services/Mail');
+const { sendMail, MAIL_TEMPLATES } = require("../Services/Mail");
 const twoFactor = require("node-2fa");
 const crypto = require("crypto");
-const {FRONTEND_BASE_URL} = require('../config');
+const { FRONTEND_BASE_URL } = require("../config");
 const User = db.users;
 
 const signup = async (req, res) => {
@@ -17,7 +17,10 @@ const signup = async (req, res) => {
       password: await bcrypt.hash(password, 10),
     };
     const user = await User.create(data);
-    const newSecret = twoFactor.generateSecret({ name: user.userName, account: user.email });
+    const newSecret = twoFactor.generateSecret({
+      name: user.userName,
+      account: user.email,
+    });
     user.twoFASecret = newSecret.secret;
     await user.save();
     if (user) {
@@ -42,13 +45,15 @@ const login = async (req, res) => {
       const isSame = await bcrypt.compare(password, user.password);
       if (isSame) {
         const { token: twoFAToken } = twoFactor.generateToken(user.twoFASecret);
-        sendMail(
-          user.email,
-          MAIL_TEMPLATES.TWO_FA,
-          {userName: user.userName, twoFAToken })
+        sendMail(user.email, MAIL_TEMPLATES.TWO_FA, {
+          userName: user.userName,
+          twoFAToken,
+        })
           .then(() => {})
           .catch((err) => console.log(err));
-        return res.status(200).send("2FA Authentication Token has been sent your email");
+        return res
+          .status(200)
+          .send("2FA Authentication Token has been sent your email");
       } else {
         return res.status(401).send("Authentication failed");
       }
@@ -71,7 +76,10 @@ const verifyTwoFAToken = async (req, res) => {
 
     if (user) {
       console.log(typeof twoFAToken);
-      const isVerifiedToken = twoFactor.verifyToken(user.twoFASecret, twoFAToken);
+      const isVerifiedToken = twoFactor.verifyToken(
+        user.twoFASecret,
+        twoFAToken
+      );
       console.log(isVerifiedToken);
       if (isVerifiedToken) {
         let token = jwt.sign({ id: user.id }, config.JWT_SECRET_KEY, {
@@ -101,19 +109,15 @@ const getPasswordResetLink = async (req, res) => {
     if (user) {
       user.passwordResetToken = crypto.randomBytes(32).toString("hex");
       await user.save();
-      sendMail(
-        user.email,
-        MAIL_TEMPLATES.FORGOT_PASSWORD,
-        {
-          userName: user.userName,
-          link: `${FRONTEND_BASE_URL}/reset-password/${user.passwordResetToken}`
-        }
-      )
+      sendMail(user.email, MAIL_TEMPLATES.FORGOT_PASSWORD, {
+        userName: user.userName,
+        link: `${FRONTEND_BASE_URL}/reset-password/${user.passwordResetToken}`,
+      })
         .then(() => {})
         .catch((err) => console.log(err));
-      res.status(200).send("Reset password Link has been sent to mail")
+      res.status(200).send("Reset password Link has been sent to mail");
     } else {
-      res.status(400).send("Bad request")
+      res.status(400).send("Bad request");
     }
   } catch (error) {
     console.log(error);
@@ -126,7 +130,7 @@ const resetPassword = async (req, res) => {
     const user = await User.findOne({
       where: {
         email,
-        passwordResetToken
+        passwordResetToken,
       },
     });
     if (user) {
@@ -134,10 +138,71 @@ const resetPassword = async (req, res) => {
       await user.save();
       res.status(200).send("Password has been reset successfully");
     } else {
-      res.status(400).send("Bad request")
+      res.status(400).send("Bad request");
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userName, email, password } = req.body;
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    user.userName = userName;
+    user.email = email;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+    await user.save();
+    return res.status(200).send({user, status: "User details have been updated successfully"});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error");
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error");
+  }
+};
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll();
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error");
+  }
+};
+
+const deleteUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    await user.destroy();
+    return res.status(200).send("User has been deleted successfully");
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Internal server error");
   }
 };
 
@@ -146,5 +211,9 @@ module.exports = {
   login,
   verifyTwoFAToken,
   getPasswordResetLink,
-  resetPassword
+  resetPassword,
+  updateUser,
+  getUserById,
+  getAllUsers,
+  deleteUserById,
 };
